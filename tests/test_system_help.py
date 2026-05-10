@@ -2,9 +2,9 @@ from asyncio import run
 from inspect import iscoroutinefunction
 
 from paigram_bot_contracts import BotPlatform
-from paigram_bot_telegram import TelegramRuntimeObjects
+from paigram_bot_telegram import TelegramBotRuntime, TelegramRuntimeObjects
 
-from paigram_impact_bot import ImpactBotHarnessConfig, with_system_help
+from paigram_impact_bot import ImpactBotHarnessConfig, build_impact_bot_harness, with_system_help
 from paigram_impact_bot.plugins.system_help import (
     SYSTEM_HELP_HANDLERS,
     SYSTEM_HELP_PLUGIN,
@@ -25,6 +25,14 @@ class NoMetadataContext:
 class FakeTelegramRuntime:
     def register_handler_declarations(self, declarations):
         return self
+
+
+class FakeTelegramApplication:
+    def __init__(self):
+        self.handlers = []
+
+    def add_handler(self, handler):
+        self.handlers.append(handler)
 
 
 def test_system_help_plugin_manifest_shape():
@@ -97,3 +105,26 @@ def test_with_system_help_is_idempotent_for_plugin_name_and_handler_group_identi
 
     assert configured.plugins == (SYSTEM_HELP_PLUGIN,)
     assert configured.handler_declaration_groups == (SYSTEM_HELP_HANDLERS,)
+
+
+def test_harness_registers_system_help_command(monkeypatch):
+    application = FakeTelegramApplication()
+    telegram_runtime = TelegramBotRuntime(application)
+    telegram_objects = TelegramRuntimeObjects(application=application, runtime=telegram_runtime)
+
+    monkeypatch.setattr(
+        "paigram_bot_telegram.runtime.build_command_handler",
+        lambda command, callback: ("command", command, callback),
+    )
+
+    config = with_system_help(
+        ImpactBotHarnessConfig(
+            scanner_packages=("paigram_impact_bot",),
+            telegram_runtime_objects=telegram_objects,
+        )
+    )
+
+    harness = build_impact_bot_harness(config)
+
+    assert harness.bot_runtime.handler_declarations.commands == SYSTEM_HELP_HANDLERS.commands
+    assert application.handlers == [("command", "help", help_command)]
