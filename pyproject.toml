@@ -1,0 +1,30 @@
+[project]
+name = "paigram-impact-bot"
+version = "0.1.0a0"
+description = "Experimental PaiGram V6 application harness."
+readme = "README.md"
+requires-python = ">=3.10,<4.0"
+dependencies = [
+    "paigram-bot-contracts @ git+https://github.com/PaiGramTeam/paigram-bot-contracts.git@9587752dd8d083a8e13999b1bbc04e94d2a9038f",
+    "paigram-bot-core @ git+https://github.com/PaiGramTeam/paigram-bot-core.git@ee5c7fb71c377f0eced2f88694a3e71c6c678084",
+    "paigram-bot-telegram @ git+https://github.com/PaiGramTeam/paigram-bot-telegram.git@1b3a3ee3ea7ecee530890c2eb879ef4f4c58b5c3",
+    "paigram-template-runtime @ git+https://github.com/PaiGramTeam/paigram-template-runtime.git@5cf573e519e8bb0faac1c59ac73198eb698d292d",
+    "paigram-resource-runtime @ git+https://github.com/PaiGramTeam/paigram-resource-runtime.git@d4c0cc0b346b4f2973e83a8834eefb9072fcb402",
+    "paigram-platform-runtime @ git+https://github.com/PaiGramTeam/paigram-platform-runtime.git@67df02a1c5b8c4b2dd6de5bb9d7e5c0ada82e8a5",
+]
+
+[dependency-groups]
+dev = ["pytest>=8,<10"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/paigram_impact_bot"]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
