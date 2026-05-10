@@ -2,6 +2,7 @@ from asyncio import run
 from inspect import iscoroutinefunction
 
 from paigram_bot_contracts import BotPlatform
+from paigram_bot_core import RuntimePluginConfig
 from paigram_bot_telegram import TelegramBotRuntime, TelegramRuntimeObjects
 
 from paigram_impact_bot import ImpactBotHarnessConfig, build_impact_bot_harness, with_system_help
@@ -84,6 +85,9 @@ def test_with_system_help_returns_new_config_without_mutating_input():
     configured = with_system_help(config)
 
     assert configured is not config
+    assert config.plugin_config.enabled == []
+    assert configured.plugin_config.enabled == ["system.help"]
+    assert configured.plugin_config is not config.plugin_config
     assert config.plugins == ()
     assert config.handler_declaration_groups == ()
     assert configured.plugins == (SYSTEM_HELP_PLUGIN,)
@@ -107,6 +111,23 @@ def test_with_system_help_is_idempotent_for_plugin_name_and_handler_group_identi
     assert configured.handler_declaration_groups == (SYSTEM_HELP_HANDLERS,)
 
 
+def test_with_system_help_preserves_enabled_plugins_without_duplicates():
+    telegram_objects = TelegramRuntimeObjects(runtime=FakeTelegramRuntime())
+    plugin_config = RuntimePluginConfig(enabled=["custom.plugin", "system.help"])
+    config = ImpactBotHarnessConfig(
+        scanner_packages=("paigram_impact_bot",),
+        plugin_config=plugin_config,
+        plugins=(SYSTEM_HELP_PLUGIN,),
+        handler_declaration_groups=(SYSTEM_HELP_HANDLERS,),
+        telegram_runtime_objects=telegram_objects,
+    )
+
+    configured = with_system_help(config)
+
+    assert configured.plugin_config is plugin_config
+    assert configured.plugin_config.enabled == ["custom.plugin", "system.help"]
+
+
 def test_harness_registers_system_help_command(monkeypatch):
     application = FakeTelegramApplication()
     telegram_runtime = TelegramBotRuntime(application)
@@ -127,4 +148,5 @@ def test_harness_registers_system_help_command(monkeypatch):
     harness = build_impact_bot_harness(config)
 
     assert harness.bot_runtime.handler_declarations.commands == SYSTEM_HELP_HANDLERS.commands
+    assert harness.bot_runtime.selected_plugins.names == ["system.help"]
     assert application.handlers == [("command", "help", help_command)]
