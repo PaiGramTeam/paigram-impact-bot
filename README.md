@@ -14,12 +14,17 @@ from paigram_bot_telegram import TelegramRuntimeObjects
 from paigram_impact_bot import ImpactBotHarnessConfig, build_impact_bot_harness
 
 
+class FakeTelegramRuntime:
+    def register_handler_declarations(self, declarations):
+        return self
+
+
 harness = build_impact_bot_harness(
     ImpactBotHarnessConfig(
         scanner_packages=("paigram_impact_bot",),
-        telegram_runtime_objects=TelegramRuntimeObjects(runtime=telegram_runtime),
+        telegram_runtime_objects=TelegramRuntimeObjects(runtime=FakeTelegramRuntime()),
     )
 )
 ```
 
-The harness builds a `paigram-bot-core` runtime, publishes Telegram runtime objects, and registers handler declarations onto `paigram-bot-telegram`.
+The harness builds a `paigram-bot-core` runtime, publishes injected Telegram runtime objects, and registers handler declarations onto `paigram-bot-telegram`.
