@@ -82,4 +82,4 @@ def with_system_rendered_help(config: ImpactBotHarnessConfig) -> ImpactBotHarnes
 
 
 def with_builtin_system_plugins(config: ImpactBotHarnessConfig) -> ImpactBotHarnessConfig:
-    return with_system_rendered_help(with_system_start(with_system_help(config)))
+    return with_system_start(with_system_help(config))

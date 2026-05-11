@@ -12,7 +12,6 @@ from paigram_impact_bot import (
     with_system_start,
 )
 from paigram_impact_bot.plugins.system_help import SYSTEM_HELP_HANDLERS, SYSTEM_HELP_PLUGIN
-from paigram_impact_bot.plugins.system_rendered_help import SYSTEM_RENDERED_HELP_PLUGIN
 from paigram_impact_bot.plugins.system_start import (
     PING_TEXT,
     PRIVACY_TEXT,
@@ -90,6 +89,13 @@ def build_config():
     )
 
 
+def build_config_without_template_runtime():
+    return ImpactBotHarnessConfig(
+        scanner_packages=("paigram_impact_bot",),
+        telegram_runtime_objects=TelegramRuntimeObjects(runtime=FakeTelegramRuntime()),
+    )
+
+
 def test_system_start_plugin_manifest_shape():
     assert SYSTEM_START_PLUGIN.name == "system.start"
     assert SYSTEM_START_PLUGIN.scanner_packages == ["paigram_impact_bot.plugins"]
@@ -159,13 +165,12 @@ def test_with_system_start_is_idempotent_for_plugin_name_and_handler_group_ident
     assert configured.handler_declaration_groups == (SYSTEM_START_HANDLERS,)
 
 
-def test_with_builtin_system_plugins_includes_help_and_start():
-    config = with_builtin_system_plugins(build_config())
+def test_with_builtin_system_plugins_includes_only_stable_text_plugins():
+    config = with_builtin_system_plugins(build_config_without_template_runtime())
 
-    assert config.plugin_config.enabled == ["system.help", "system.start", "system.help_image"]
-    assert config.plugins == (SYSTEM_HELP_PLUGIN, SYSTEM_START_PLUGIN, SYSTEM_RENDERED_HELP_PLUGIN)
-    assert config.handler_declaration_groups[:2] == (SYSTEM_HELP_HANDLERS, SYSTEM_START_HANDLERS)
-    assert len(config.handler_declaration_groups) == 3
+    assert config.plugin_config.enabled == ["system.help", "system.start"]
+    assert config.plugins == (SYSTEM_HELP_PLUGIN, SYSTEM_START_PLUGIN)
+    assert config.handler_declaration_groups == (SYSTEM_HELP_HANDLERS, SYSTEM_START_HANDLERS)
 
 
 def test_harness_registers_system_start_commands_and_sends_responses(monkeypatch):
