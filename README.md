@@ -53,4 +53,4 @@ config = with_system_help(
 harness = build_impact_bot_harness(config)
 ```
 
-The POC contributes a `system.help` plugin manifest and a `/help` command declaration. The command callback remains platform-neutral and does not send Telegram messages directly.
+The POC contributes a `system.help` plugin manifest and a `/help` command declaration. The command callback returns a platform-neutral `TextResponse`; the Telegram adapter sends returned text responses without exposing Telegram APIs to plugin code.

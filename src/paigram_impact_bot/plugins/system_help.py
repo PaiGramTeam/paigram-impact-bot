@@ -1,6 +1,4 @@
-from collections.abc import MutableMapping
-
-from paigram_bot_contracts import BotPlatform, CommandHandlerDeclaration, PluginHandlerDeclarations, PluginPackage
+from paigram_bot_contracts import BotPlatform, CommandHandlerDeclaration, PluginHandlerDeclarations, PluginPackage, TextResponse
 
 
 HELP_TEXT = "Impact Bot commands:\n/help - Show available Impact Bot commands."
@@ -17,12 +15,8 @@ def build_help_text() -> str:
     return HELP_TEXT
 
 
-async def help_command(context) -> None:
-    help_text = build_help_text()
-    metadata = getattr(context, "metadata", None)
-    if isinstance(metadata, MutableMapping):
-        metadata["system.help.text"] = help_text
-    return None
+async def help_command(context) -> TextResponse:
+    return TextResponse(text=build_help_text())
 
 
 SYSTEM_HELP_HANDLERS = PluginHandlerDeclarations(

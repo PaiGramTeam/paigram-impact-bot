@@ -1,7 +1,7 @@
 from asyncio import run
 from inspect import iscoroutinefunction
 
-from paigram_bot_contracts import BotPlatform
+from paigram_bot_contracts import BotPlatform, TextResponse
 from paigram_bot_core import RuntimePluginConfig
 from paigram_bot_telegram import TelegramBotRuntime, TelegramRuntimeObjects
 
@@ -12,15 +12,6 @@ from paigram_impact_bot.plugins.system_help import (
     build_help_text,
     help_command,
 )
-
-
-class MutableMetadataContext:
-    def __init__(self):
-        self.metadata = {}
-
-
-class NoMetadataContext:
-    pass
 
 
 class FakeTelegramRuntime:
@@ -34,6 +25,38 @@ class FakeTelegramApplication:
 
     def add_handler(self, handler):
         self.handlers.append(handler)
+
+
+class FakeBot:
+    def __init__(self):
+        self.sent_messages = []
+
+    async def send_message(self, *, chat_id, text):
+        self.sent_messages.append({"chat_id": str(chat_id), "text": text})
+
+
+class FakeTelegramContext:
+    def __init__(self):
+        self.bot = FakeBot()
+
+
+class FakeUser:
+    id = 12345
+    full_name = "Tester"
+
+
+class FakeChat:
+    id = 67890
+
+
+class FakeMessage:
+    text = "/help"
+
+
+class FakeUpdate:
+    effective_user = FakeUser()
+    effective_chat = FakeChat()
+    effective_message = FakeMessage()
 
 
 def test_system_help_plugin_manifest_shape():
@@ -60,19 +83,10 @@ def test_build_help_text_is_deterministic():
     assert build_help_text() == "Impact Bot commands:\n/help - Show available Impact Bot commands."
 
 
-def test_help_command_writes_help_text_to_mutable_metadata():
-    context = MutableMetadataContext()
+def test_help_command_returns_text_response():
+    result = run(help_command(object()))
 
-    result = run(help_command(context))
-
-    assert result is None
-    assert context.metadata == {"system.help.text": build_help_text()}
-
-
-def test_help_command_ignores_context_without_metadata():
-    result = run(help_command(NoMetadataContext()))
-
-    assert result is None
+    assert result == TextResponse(text=build_help_text())
 
 
 def test_with_system_help_returns_new_config_without_mutating_input():
@@ -133,10 +147,12 @@ def test_harness_registers_system_help_command(monkeypatch):
     telegram_runtime = TelegramBotRuntime(application)
     telegram_objects = TelegramRuntimeObjects(application=application, runtime=telegram_runtime)
 
-    monkeypatch.setattr(
-        "paigram_bot_telegram.runtime.build_command_handler",
-        lambda command, callback: ("command", command, callback),
-    )
+    class FakeCommandHandler:
+        def __init__(self, command, callback):
+            self.command = command
+            self.callback = callback
+
+    monkeypatch.setattr("paigram_bot_telegram.handlers.CommandHandler", FakeCommandHandler)
 
     config = with_system_help(
         ImpactBotHarnessConfig(
@@ -149,4 +165,12 @@ def test_harness_registers_system_help_command(monkeypatch):
 
     assert harness.bot_runtime.handler_declarations.commands == SYSTEM_HELP_HANDLERS.commands
     assert harness.bot_runtime.selected_plugins.names == ["system.help"]
-    assert application.handlers == [("command", "help", help_command)]
+    assert len(application.handlers) == 1
+    assert application.handlers[0].command == "help"
+
+    telegram_context = FakeTelegramContext()
+    run(application.handlers[0].callback(FakeUpdate(), telegram_context))
+
+    assert telegram_context.bot.sent_messages == [
+        {"chat_id": "67890", "text": build_help_text()},
+    ]
