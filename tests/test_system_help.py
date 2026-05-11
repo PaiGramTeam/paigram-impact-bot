@@ -31,8 +31,15 @@ class FakeBot:
     def __init__(self):
         self.sent_messages = []
 
-    async def send_message(self, *, chat_id, text):
-        self.sent_messages.append({"chat_id": str(chat_id), "text": text})
+    async def send_message(self, *, chat_id, text, parse_mode=None, disable_web_page_preview=None):
+        self.sent_messages.append(
+            {
+                "chat_id": str(chat_id),
+                "text": text,
+                "parse_mode": parse_mode,
+                "disable_web_page_preview": disable_web_page_preview,
+            }
+        )
 
 
 class FakeTelegramContext:
@@ -172,5 +179,10 @@ def test_harness_registers_system_help_command(monkeypatch):
     run(application.handlers[0].callback(FakeUpdate(), telegram_context))
 
     assert telegram_context.bot.sent_messages == [
-        {"chat_id": "67890", "text": build_help_text()},
+        {
+            "chat_id": "67890",
+            "text": build_help_text(),
+            "parse_mode": None,
+            "disable_web_page_preview": None,
+        },
     ]

@@ -54,3 +54,27 @@ harness = build_impact_bot_harness(config)
 ```
 
 The POC contributes a `system.help` plugin manifest and a `/help` command declaration. The command callback returns a platform-neutral `TextResponse`; the Telegram adapter sends returned text responses without exposing Telegram APIs to plugin code.
+
+## Built-In System Plugins
+
+`system.start` is the first V6 legacy text-command slice migrated from `PaiGramBot/plugins/app/start.py`. It provides `/start`, `/ping`, and `/privacy` as platform-neutral command declarations returning `TextResponse` values.
+
+```python
+from paigram_bot_telegram import TelegramRuntimeObjects
+
+from paigram_impact_bot import ImpactBotHarnessConfig, build_impact_bot_harness, with_builtin_system_plugins
+
+
+class FakeTelegramRuntime:
+    def register_handler_declarations(self, declarations):
+        return self
+
+
+config = with_builtin_system_plugins(
+    ImpactBotHarnessConfig(
+        scanner_packages=("paigram_impact_bot",),
+        telegram_runtime_objects=TelegramRuntimeObjects(runtime=FakeTelegramRuntime()),
+    )
+)
+harness = build_impact_bot_harness(config)
+```
