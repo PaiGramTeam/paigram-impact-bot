@@ -2,7 +2,7 @@ from asyncio import run
 from inspect import iscoroutinefunction
 
 from paigram_bot_contracts import BotPlatform, TextResponse
-from paigram_bot_core import RuntimePluginConfig
+from paigram_bot_core import RuntimePluginConfig, TemplateRuntimeObjects
 from paigram_bot_telegram import TelegramBotRuntime, TelegramRuntimeObjects
 
 from paigram_impact_bot import (
@@ -12,6 +12,7 @@ from paigram_impact_bot import (
     with_system_start,
 )
 from paigram_impact_bot.plugins.system_help import SYSTEM_HELP_HANDLERS, SYSTEM_HELP_PLUGIN
+from paigram_impact_bot.plugins.system_rendered_help import SYSTEM_RENDERED_HELP_PLUGIN
 from paigram_impact_bot.plugins.system_start import (
     PING_TEXT,
     PRIVACY_TEXT,
@@ -27,6 +28,11 @@ from paigram_impact_bot.plugins.system_start import (
 class FakeTelegramRuntime:
     def register_handler_declarations(self, declarations):
         return self
+
+
+class FakeImageRenderer:
+    async def render_png(self, template, data, *, viewport=None, selector=None, wait_until="load"):
+        return b"png"
 
 
 class FakeTelegramApplication:
@@ -80,6 +86,7 @@ def build_config():
     return ImpactBotHarnessConfig(
         scanner_packages=("paigram_impact_bot",),
         telegram_runtime_objects=TelegramRuntimeObjects(runtime=FakeTelegramRuntime()),
+        template_runtime_objects=TemplateRuntimeObjects(image_renderer=FakeImageRenderer()),
     )
 
 
@@ -155,9 +162,10 @@ def test_with_system_start_is_idempotent_for_plugin_name_and_handler_group_ident
 def test_with_builtin_system_plugins_includes_help_and_start():
     config = with_builtin_system_plugins(build_config())
 
-    assert config.plugin_config.enabled == ["system.help", "system.start"]
-    assert config.plugins == (SYSTEM_HELP_PLUGIN, SYSTEM_START_PLUGIN)
-    assert config.handler_declaration_groups == (SYSTEM_HELP_HANDLERS, SYSTEM_START_HANDLERS)
+    assert config.plugin_config.enabled == ["system.help", "system.start", "system.help_image"]
+    assert config.plugins == (SYSTEM_HELP_PLUGIN, SYSTEM_START_PLUGIN, SYSTEM_RENDERED_HELP_PLUGIN)
+    assert config.handler_declaration_groups[:2] == (SYSTEM_HELP_HANDLERS, SYSTEM_START_HANDLERS)
+    assert len(config.handler_declaration_groups) == 3
 
 
 def test_harness_registers_system_start_commands_and_sends_responses(monkeypatch):

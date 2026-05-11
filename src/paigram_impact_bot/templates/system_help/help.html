@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{{ title }}</title>
+  <style>
+    body { margin: 0; background: #f6efe7; color: #2c2118; font-family: Arial, sans-serif; }
+    .help-card { box-sizing: border-box; width: 900px; min-height: 600px; padding: 56px; background: linear-gradient(135deg, #fffaf2, #f1dec8); }
+    h1 { margin: 0 0 10px; font-size: 52px; }
+    .subtitle { margin: 0 0 34px; color: #755d48; font-size: 24px; }
+    .command { display: flex; gap: 22px; padding: 16px 0; border-top: 1px solid rgba(44, 33, 24, .14); font-size: 24px; }
+    .command code { min-width: 150px; color: #9b4d18; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <main class="help-card">
+    <h1>{{ title }}</h1>
+    <p class="subtitle">{{ subtitle }}</p>
+    {% for item in commands %}
+    <div class="command"><code>{{ item.command }}</code><span>{{ item.description }}</span></div>
+    {% endfor %}
+  </main>
+</body>
+</html>

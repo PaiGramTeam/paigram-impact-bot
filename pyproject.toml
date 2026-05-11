@@ -5,9 +5,9 @@ description = "Experimental PaiGram V6 application harness."
 readme = "README.md"
 requires-python = ">=3.10,<4.0"
 dependencies = [
-    "paigram-bot-contracts @ git+https://github.com/PaiGramTeam/paigram-bot-contracts.git@418e260111701e600a027360b7839c0a8b19562e",
+    "paigram-bot-contracts @ git+https://github.com/PaiGramTeam/paigram-bot-contracts.git@77f2c35c7cf8be354ed860ca7368b6613ab9baf7",
     "paigram-bot-core @ git+https://github.com/PaiGramTeam/paigram-bot-core.git@ee5c7fb71c377f0eced2f88694a3e71c6c678084",
-    "paigram-bot-telegram @ git+https://github.com/PaiGramTeam/paigram-bot-telegram.git@a84e226e209fa5c30cdfc266be2350181f5f3914",
+    "paigram-bot-telegram @ git+https://github.com/PaiGramTeam/paigram-bot-telegram.git@9d0a34bebdcb823d7c771a6da68c9300a7486d34",
     "paigram-template-runtime @ git+https://github.com/PaiGramTeam/paigram-template-runtime.git@5cf573e519e8bb0faac1c59ac73198eb698d292d",
     "paigram-resource-runtime @ git+https://github.com/PaiGramTeam/paigram-resource-runtime.git@d4c0cc0b346b4f2973e83a8834eefb9072fcb402",
     "paigram-platform-runtime @ git+https://github.com/PaiGramTeam/paigram-platform-runtime.git@67df02a1c5b8c4b2dd6de5bb9d7e5c0ada82e8a5",
@@ -30,7 +30,7 @@ allow-direct-references = true
 name = "paigram-bot-core"
 version = "0.1.0a0"
 requires-dist = [
-    "paigram-bot-contracts @ git+https://github.com/PaiGramTeam/paigram-bot-contracts.git@418e260111701e600a027360b7839c0a8b19562e",
+    "paigram-bot-contracts @ git+https://github.com/PaiGramTeam/paigram-bot-contracts.git@77f2c35c7cf8be354ed860ca7368b6613ab9baf7",
     "persica @ git+https://github.com/luoshuijs/Persica.git@6039553f68763231a96f35b3f2e03319caa00310",
     "pydantic>=2,<3",
 ]
